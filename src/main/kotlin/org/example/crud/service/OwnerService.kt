@@ -3,6 +3,7 @@ package org.example.crud.service
 import org.example.crud.dto.OwnerRequest
 import org.example.crud.dto.OwnerResponse
 import org.example.crud.entity.Owner
+import org.example.crud.exception.OwnerHasMotorcyclesException
 import org.example.crud.repository.OwnerRepository
 import org.springframework.stereotype.Service
 
@@ -13,9 +14,9 @@ class OwnerService(
 
   fun create(request: OwnerRequest): OwnerResponse {
     val owner = Owner(
-      name = request.name,
-      phone = request.phone,
-      email = request.email,
+      name = request.name!!,
+      email = request.email!!,
+      phone = request.phone!!,
     )
     return repository.save(owner).toResponse()
   }
@@ -33,26 +34,30 @@ class OwnerService(
     val owner =
       repository.findById(id).orElseThrow { NoSuchElementException("Владелец с id $id не найден") }
 
-    owner.name = request.name
-    owner.phone = request.phone
-    owner.email = request.email
+    owner.name = request.name!!
+    owner.email = request.email!!
+    owner.phone = request.phone!!
 
     return repository.save(owner).toResponse()
   }
 
   fun delete(id: Long) {
-    repository.findById(id)
+    val owner = repository.findById(id)
       .orElseThrow { NoSuchElementException("Владелец с id $id не найден") }
 
-    repository.deleteById(id)
+    if (owner.motorcycles.isNotEmpty()) {
+      throw OwnerHasMotorcyclesException("Владелец с id: $id имеет мотоциклы")
+    } else {
+      repository.deleteById(id)
+    }
   }
 
 
   private fun Owner.toResponse(): OwnerResponse = OwnerResponse(
     id = this.id!!,
     name = this.name,
-    phone = this.phone,
     email = this.email,
+    phone = this.phone,
     motorcycles = this.motorcycles.map { motorcycle -> motorcycle.toResponse() }
   )
 }

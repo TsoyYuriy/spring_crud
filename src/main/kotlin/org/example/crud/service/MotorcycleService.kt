@@ -21,11 +21,11 @@ class MotorcycleService(
     }
 
     val motorcycle = Motorcycle(
-      brand = request.brand,
-      model = request.model,
-      year = request.year,
-      price = request.price,
-      engineVolume = request.engineVolume,
+      brand = request.brand!!,
+      model = request.model!!,
+      year = request.year!!,
+      price = request.price!!,
+      engineVolume = request.engineVolume!!,
       type = request.type,
       owner = owner
     )
@@ -53,12 +53,17 @@ class MotorcycleService(
     val motorcycle = repository.findById(id)
       .orElseThrow { NoSuchElementException("Мотоцикл с id $id не найден") }
 
-    motorcycle.brand = request.brand
-    motorcycle.model = request.model
-    motorcycle.year = request.year
-    motorcycle.price = request.price
-    motorcycle.engineVolume = request.engineVolume
+    val owner = request.ownerId?.let { id ->
+      ownerRepository.findById(id).orElseThrow { NoSuchElementException("Такого владельца нет :(") }
+    }
+
+    motorcycle.brand = request.brand!!
+    motorcycle.model = request.model!!
+    motorcycle.year = request.year!!
+    motorcycle.price = request.price!!
+    motorcycle.engineVolume = request.engineVolume!!
     motorcycle.type = request.type
+    motorcycle.owner = owner
 
     val saved = repository.save(motorcycle)
     return saved.toResponse()
@@ -82,5 +87,5 @@ fun Motorcycle.toResponse(): MotorcycleResponse = MotorcycleResponse(
   price = this.price,
   engineVolume = this.engineVolume,
   type = this.type,
-  owner = this.owner?.let { OwnerSummary(it.id!!, it.name, it.phone, it.email) }
+  owner = this.owner?.let { OwnerSummary(it.id!!, it.name, it.email, it.phone) }
 )

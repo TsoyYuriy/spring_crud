@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import org.example.crud.dto.MotorcycleRequest
 import org.example.crud.dto.MotorcycleResponse
 import org.example.crud.service.MotorcycleService
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -11,7 +12,9 @@ import org.springframework.web.bind.annotation.*
 class MotorcycleController(private val service: MotorcycleService) {
 
   @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
   fun create(@Valid @RequestBody motorcycle: MotorcycleRequest): MotorcycleResponse {
+
     return service.create(motorcycle)
   }
 
@@ -34,6 +37,7 @@ class MotorcycleController(private val service: MotorcycleService) {
     return service.update(id, request)
   }
 
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   @DeleteMapping("/{id}")
   fun delete(@PathVariable id: Long) {
     return service.delete(id)
